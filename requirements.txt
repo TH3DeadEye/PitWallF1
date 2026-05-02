@@ -1,0 +1,14 @@
+fastf1
+pandas
+numpy
+scipy
+scikit-learn
+backboard-sdk
+google-genai>=1.0.0
+google-generativeai
+streamlit
+plotly
+python-dotenv
+fastapi
+uvicorn[standard]
+requests

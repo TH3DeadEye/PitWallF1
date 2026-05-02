@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 24px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #222; border: 1px solid #222; }
+.stat-card {
+  background: #0f0f0f;
+  padding: 24px 20px;
+}
+.stat-number {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.stat-number.accent { color: #e8002d; }
+.stat-unit {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #888;
+  margin-left: 2px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #888;
+  margin-top: 8px;
+}
+.stat-sub {
+  font-size: 11px;
+  color: #444;
+  margin-top: 3px;
+  letter-spacing: 0.02em;
+}
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="stat-card">
+      <div class="stat-number accent">0.89<span class="stat-unit">σ</span></div>
+      <div class="stat-label">Norris std dev</div>
+      <div class="stat-sub">Finishing positions, 2025</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">−4.8<span class="stat-unit">pts</span></div>
+      <div class="stat-label">Points rate drop</div>
+      <div class="stat-sub">After taking championship lead</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">14</div>
+      <div class="stat-label">Rounds led</div>
+      <div class="stat-sub">Without securing the title</div>
+    </div>
+  </div>
+</body>
+</html>

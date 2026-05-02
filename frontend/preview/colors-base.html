@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 20px; }
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.swatch { border-radius: 2px; overflow: hidden; }
+.swatch-color { height: 56px; width: 100%; }
+.swatch-info { padding: 8px 0 0; }
+.swatch-name { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #888; }
+.swatch-value { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="swatch"><div class="swatch-color" style="background:#0f0f0f; border: 1px solid #222;"></div><div class="swatch-info"><div class="swatch-name">BG Base</div><div class="swatch-value">#0f0f0f</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#1a1a1a;"></div><div class="swatch-info"><div class="swatch-name">BG Surface</div><div class="swatch-value">#1a1a1a</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#222222;"></div><div class="swatch-info"><div class="swatch-name">BG Elevated</div><div class="swatch-value">#222222</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#e8002d;"></div><div class="swatch-info"><div class="swatch-name">Accent</div><div class="swatch-value">#e8002d</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#a80020;"></div><div class="swatch-info"><div class="swatch-name">Accent Dim</div><div class="swatch-value">#a80020</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#ffffff;"></div><div class="swatch-info"><div class="swatch-name">FG Primary</div><div class="swatch-value">#ffffff</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#c0c0c0;"></div><div class="swatch-info"><div class="swatch-name">FG Secondary</div><div class="swatch-value">#c0c0c0</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#888888;"></div><div class="swatch-info"><div class="swatch-name">FG Muted</div><div class="swatch-value">#888888</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#444444;"></div><div class="swatch-info"><div class="swatch-name">FG Faint</div><div class="swatch-value">#444444</div></div></div>
+  <div class="swatch"><div class="swatch-color" style="background:#222222; border: 1px solid #333;"></div><div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-value">#222222</div></div></div>
+</div>
+</body>
+</html>

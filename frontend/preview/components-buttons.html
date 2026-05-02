@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 24px; }
+.row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; margin-bottom: 10px; }
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 12px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: #e8002d; color: #fff; border: none;
+  border-radius: 2px; padding: 0 20px; height: 34px; cursor: pointer;
+}
+.btn-primary.hover { background: #a80020; }
+.btn-primary.active { background: #a80020; transform: scale(0.97); }
+.btn-primary.loading { background: #a80020; opacity: 0.7; cursor: wait; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Barlow', sans-serif; font-weight: 500; font-size: 12px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: transparent; color: #888; border: 1px solid #222;
+  border-radius: 2px; padding: 0 20px; height: 34px; cursor: pointer;
+}
+.btn-ghost.hover { color: #fff; border-color: #444; background: #222; }
+
+.spinner {
+  width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.state-label { font-size: 10px; color: #444; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+.col { display: flex; flex-direction: column; align-items: flex-start; }
+</style>
+</head>
+<body>
+  <div class="label">Primary Button — States</div>
+  <div class="row" style="margin-bottom: 20px;">
+    <div class="col"><button class="btn-primary">Run Pipeline</button><div class="state-label">Default</div></div>
+    <div class="col"><button class="btn-primary hover">Run Pipeline</button><div class="state-label">Hover</div></div>
+    <div class="col"><button class="btn-primary active">Run Pipeline</button><div class="state-label">Active</div></div>
+    <div class="col"><button class="btn-primary loading"><div class="spinner"></div>Running…</button><div class="state-label">Loading</div></div>
+  </div>
+  <div class="label">Ghost Button — States</div>
+  <div class="row">
+    <div class="col"><button class="btn-ghost">View Raw Data</button><div class="state-label">Default</div></div>
+    <div class="col"><button class="btn-ghost hover">View Raw Data</button><div class="state-label">Hover</div></div>
+  </div>
+</body>
+</html>

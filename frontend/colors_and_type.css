@@ -1,0 +1,350 @@
+/* ============================================================
+   THE CONSISTENCY THEOREM — Design System Foundations
+   colors_and_type.css
+   ============================================================ */
+
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Base Color Tokens ── */
+:root {
+  --bg-base:         #0f0f0f;
+  --bg-surface:      #1a1a1a;
+  --bg-elevated:     #222222;
+  --bg-code:         #161616;
+
+  --accent:          #e8002d;
+  --accent-dim:      #a80020;
+  --accent-glow:     rgba(232, 0, 45, 0.15);
+
+  --fg-primary:      #ffffff;
+  --fg-secondary:    #c0c0c0;
+  --fg-muted:        #888888;
+  --fg-faint:        #444444;
+
+  --border:          #222222;
+  --border-subtle:   #1c1c1c;
+
+  --chart-champion:  #e8002d;
+  --chart-runner:    #444444;
+  --chart-grid:      #1f1f1f;
+
+  /* ── Semantic Aliases ── */
+  --color-page-bg:       var(--bg-base);
+  --color-surface:       var(--bg-surface);
+  --color-hover:         var(--bg-elevated);
+  --color-cta:           var(--accent);
+  --color-cta-hover:     var(--accent-dim);
+  --color-text:          var(--fg-primary);
+  --color-text-body:     var(--fg-secondary);
+  --color-text-label:    var(--fg-muted);
+  --color-text-dim:      var(--fg-faint);
+  --color-divider:       var(--border);
+}
+
+/* ── Typography Tokens ── */
+:root {
+  /* Font families */
+  --font-display:    'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-ui:         'Barlow', 'Arial', sans-serif;
+  --font-editorial:  'Libre Baskerville', Georgia, serif;
+  --font-mono:       'JetBrains Mono', 'Courier New', monospace;
+
+  /* Font sizes — 8px base scale */
+  --text-xs:    11px;
+  --text-sm:    13px;
+  --text-base:  16px;
+  --text-md:    18px;
+  --text-lg:    22px;
+  --text-xl:    28px;
+  --text-2xl:   36px;
+  --text-3xl:   48px;
+  --text-4xl:   64px;
+  --text-5xl:   88px;
+  --text-hero:  clamp(40px, 6vw, 72px);
+
+  /* Line heights */
+  --leading-tight:   1.1;
+  --leading-snug:    1.3;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.7;
+  --leading-loose:   1.9;
+
+  /* Letter spacing */
+  --tracking-tight:  -0.02em;
+  --tracking-normal:  0em;
+  --tracking-wide:    0.04em;
+  --tracking-wider:   0.08em;
+  --tracking-widest:  0.14em;
+
+  /* Font weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-black:    800;
+}
+
+/* ── Spacing Tokens ── */
+:root {
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+  /* Layout */
+  --max-article: 860px;
+  --max-layout:  1200px;
+  --max-charts:  1160px;
+
+  /* Radius */
+  --radius-none: 0px;
+  --radius-sm:   2px;
+  --radius-md:   4px;
+  --radius-lg:   8px;
+}
+
+/* ── Base Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--fg-primary);
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+/* ── Semantic Type Styles ── */
+
+/* App name / logotype */
+.t-logotype {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-primary);
+}
+
+.t-logotype .t-accent {
+  color: var(--accent);
+}
+
+/* Hero paragraph — the lede */
+.t-hero {
+  font-family: var(--font-editorial);
+  font-size: var(--text-hero);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+  text-wrap: pretty;
+}
+
+/* Section header */
+.t-section-header {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Chart title */
+.t-chart-title {
+  font-family: var(--font-ui);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Stat number — big callout */
+.t-stat-number {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: var(--text-5xl);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-primary);
+  line-height: 1;
+}
+
+.t-stat-number.is-accent {
+  color: var(--accent);
+}
+
+/* Stat label */
+.t-stat-label {
+  font-family: var(--font-ui);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Article headings */
+h1, .t-h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+}
+
+h2, .t-h2 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+}
+
+/* Body / article paragraph */
+p, .t-body {
+  font-family: var(--font-editorial);
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--fg-secondary);
+  text-wrap: pretty;
+}
+
+/* Caption / label */
+.t-caption {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Mono / inline data */
+code, .t-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+  background: var(--bg-code);
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Component Base Styles ── */
+
+/* Button — primary */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--fg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-6);
+  height: 36px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 100ms ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-dim);
+}
+
+.btn-primary:active {
+  background: var(--accent-dim);
+  transform: scale(0.97);
+}
+
+/* Button — ghost */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-6);
+  height: 36px;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.btn-ghost:hover {
+  color: var(--fg-primary);
+  border-color: var(--fg-faint);
+  background: var(--bg-elevated);
+}
+
+/* Surface card */
+.surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--space-12) 0;
+}
+
+/* ── Animation Utilities ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.anim-fade-up {
+  animation: fadeInUp 400ms ease-out both;
+}
+
+.anim-fade {
+  animation: fadeIn 400ms ease-out both;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--fg-faint); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }

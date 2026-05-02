@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Consistency Theorem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes stepIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { background: #0f0f0f; color: #fff; font-family: 'Barlow', sans-serif; min-height: 100vh; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0f0f0f; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+  #loading-overlay {
+    position: fixed; inset: 0; background: #0f0f0f; z-index: 200;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px;
+  }
+  #loading-overlay.hidden { display: none; }
+  .loading-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.06em; text-transform: uppercase; color: #fff; opacity: 0.35; }
+  .loading-logo .r { color: #e8002d; opacity: 1; }
+  .loading-context { font-family: 'Barlow', sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #444; margin-top: -28px; }
+  .loading-steps { display: flex; flex-direction: column; gap: 12px; min-width: 300px; }
+  .loading-step { display: flex; align-items: center; gap: 12px; opacity: 0; animation: stepIn 300ms ease forwards; }
+  .loading-step.done { opacity: 0.4; }
+  .loading-step.active { opacity: 1; }
+  .step-indicator { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-spinner { width: 14px; height: 14px; border: 2px solid rgba(232,0,45,0.2); border-top-color: #e8002d; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .step-check { font-size: 11px; color: #555; }
+  .step-pending { width: 12px; height: 12px; border: 1px solid #2a2a2a; border-radius: 50%; }
+  .step-text { font-size: 13px; color: #888; letter-spacing: 0.02em; }
+  .loading-step.done .step-text { color: #3a3a3a; text-decoration: line-through; text-decoration-color: #2a2a2a; }
+  .loading-step.active .step-text { color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="hidden">
+  <div class="loading-logo">THE CONSISTENCY <span class="r">THEOREM</span></div>
+  <div class="loading-context" id="loading-context"></div>
+  <div class="loading-steps" id="loading-steps"></div>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+/* ─────────────────────────────────────────────
+   SEASON DATA
+───────────────────────────────────────────── */
+const SEASONS = {
+  2021: {
+    champion: "Max Verstappen",
+    runnerUp: "Lewis Hamilton",
+    constructor: "Red Bull",
+    theme: "The title decided on the final lap of the final race. Abu Dhabi. A safety car. A decision that rewrote history.",
+    hook: "Lewis Hamilton led the 2021 World Championship for more rounds than any driver in a decade. He crossed the finish line in Abu Dhabi last. The data tells you exactly how it happened.",
+    angle: "Hamilton's late-season consistency collapse",
+    stats: { stddev: 0.72, championStddev: 0.31, pointsRateBefore: 17.8, pointsRateAfter: 14.2, roundsLed: 16, statLabel: "Hamilton std dev", statSub: "Finishing positions, 2021" },
+    chart1: { champion: [0.31, 0.29, 0.28, 0.30, 0.31], runnerUp: [0.69, 0.71, 0.68, 0.70, 0.72] },
+    chart2: [22,25,18,25,15,25,20,25,18,12,25,15,8,22,18,12,25,15,10,18,12,8,15,10],
+    leadRound: 7,
+    presetQuestions: [
+      "Why did Hamilton lose despite leading for 16 rounds?",
+      "Was the Abu Dhabi result a statistical anomaly?",
+      "Who was more consistent — Hamilton or Verstappen?",
+      "At what round did the title really change hands?",
+    ],
+    story: [
+      "The 2021 Formula 1 season produced the most contested championship finish in the sport's history — and the most statistically instructive. Lewis Hamilton, driving what every metrics system agreed was the superior car across the second half of the season, arrived at the Abu Dhabi Grand Prix needing only to finish. The data, at that moment, gave him an 89% probability of becoming an eight-time World Champion. The data did not account for what happened under the safety car.",
+      "Strip away the controversy, however, and a more uncomfortable truth emerges. Hamilton's finishing-position standard deviation across the 2021 season was 0.72 — more than double Verstappen's 0.31. The gap is not explained by the final race alone. From round seven, when Hamilton first assumed the championship lead, his points rate fell from 17.8 per race to 14.2. That 3.6-point erosion is the consistency collapse — a measurable phenomenon that affects championship leaders across every era of the sport, regardless of machinery.",
+      "Verstappen, by contrast, maintained his variance almost perfectly across the full season. His worst finishing position after round ten was fifth. Hamilton's was a retirement. The Consistency Theorem does not relitigate Abu Dhabi. It simply records what the numbers show: the driver who managed his lead lost it. The driver who kept attacking, took it.",
+    ],
+  },
+  2022: {
+    champion: "Max Verstappen",
+    runnerUp: "Charles Leclerc",
+    constructor: "Red Bull",
+    theme: "Ferrari had the fastest car in the opening rounds. They lost the championship by the summer break.",
+    hook: "Charles Leclerc led the championship after three rounds with the fastest car on the grid. By August, the title was mathematically unreachable. The data explains the Ferrari collapse in three numbers.",
+    angle: "The Ferrari strategic and consistency implosion",
+    stats: { stddev: 0.91, championStddev: 0.28, pointsRateBefore: 18.4, pointsRateAfter: 9.7, roundsLed: 6, statLabel: "Leclerc std dev", statSub: "Finishing positions, 2022" },
+    chart1: { champion: [0.28, 0.31, 0.29, 0.28, 0.28], runnerUp: [0.68, 0.72, 0.75, 0.81, 0.91] },
+    chart2: [25,25,18,25,10,6,8,25,0,15,25,0,18,12,8,22,15,10,6,18,12,25,8,15],
+    leadRound: 4,
+    presetQuestions: [
+      "Why did Ferrari lose the 2022 championship?",
+      "Was Leclerc's consistency the real problem, or strategy?",
+      "At what point was the championship effectively over?",
+      "Who was the most consistent driver in 2022?",
+    ],
+    story: [
+      "The 2022 Formula 1 season is the cleanest case study in the Consistency Theorem's database. Charles Leclerc arrived at the Bahrain Grand Prix with a car that was, by every metric, the fastest on the grid. He won. He won again in Australia. After four rounds he led the championship by 46 points. The paddock consensus pointed to a Ferrari year. The data, in retrospect, was already raising flags.",
+      "Leclerc's finishing-position standard deviation for the 2022 season was 0.91 — the highest recorded for a championship runner-up since the turbocharged era. The number encapsulates a catastrophic inconsistency that no single cause fully explains: mechanical failures, strategic errors, driver errors, and the accumulating psychological weight of a lead that was slipping away race by race. His points rate before losing the championship lead was 18.4 per race. In the second half of the season, it fell to 9.7 — a collapse so severe it borders on statistical impossibility if you treat the opening rounds as the baseline.",
+      "Verstappen's 0.28 standard deviation tells the opposite story. From round seven onwards, Red Bull delivered their driver to the podium with the reliability of a commuter train. The Consistency Theorem does not assign blame to strategy calls or power unit failures. It records the outcome: the driver with the most consistent car and the most consistent approach won the championship by 146 points. The fastest car in February did not win in November.",
+    ],
+  },
+  2023: {
+    champion: "Max Verstappen",
+    runnerUp: "Sergio Pérez",
+    constructor: "Red Bull",
+    theme: "Red Bull won everything. But within the team, a story of diverging consistency played out all season.",
+    hook: "Red Bull Racing won 21 of 22 races in 2023. Their second driver failed to convert that dominance into a championship challenge. The data shows how a teammate gap became a consistency chasm.",
+    angle: "The intra-team consistency divergence",
+    stats: { stddev: 0.84, championStddev: 0.22, pointsRateBefore: 19.1, pointsRateAfter: 13.5, roundsLed: 3, statLabel: "Pérez std dev", statSub: "Finishing positions, 2023" },
+    chart1: { champion: [0.22, 0.25, 0.24, 0.22, 0.22], runnerUp: [0.71, 0.74, 0.76, 0.80, 0.84] },
+    chart2: [25,18,25,15,25,22,18,25,12,25,18,25,8,25,22,15,10,25,18,25,15,12],
+    leadRound: 5,
+    presetQuestions: [
+      "Why did Verstappen's 2023 dominance reach historic levels?",
+      "Could Pérez have challenged for the title with better consistency?",
+      "Who was the most consistent driver outside Red Bull?",
+      "At what round was the championship mathematically sealed?",
+    ],
+    story: [
+      "The 2023 Formula 1 season presents a unique challenge to the Consistency Theorem: when one team is so dominant that the championship is never in genuine doubt, what does the data tell us? The answer, it turns out, is more interesting than the championship itself. Because within Red Bull Racing, two drivers with identical equipment produced one of the largest intra-team consistency divergences in the sport's history.",
+      "Max Verstappen's finishing-position standard deviation for 2023 was 0.22 — the lowest recorded in the hybrid era. Sergio Pérez's was 0.84. The gap of 0.62 sigma between teammates in the same machinery eliminates the car as a variable entirely. What the data exposes is pure execution: Verstappen's ability to convert qualifying positions and race pace into points with almost mechanical reliability, set against Pérez's erratic rhythm of brilliance punctuated by costly errors. Pérez's points rate fell from 19.1 in the opening five rounds to 13.5 for the remainder — not because the car changed, but because the pressure of being second-best in the world's best car began to show.",
+      "The Consistency Theorem is not about talent. Pérez is a Formula 1 race winner, a podium finisher, a driver of unquestioned ability. But the 2023 data demonstrates that consistency is a separable skill — one that can diverge dramatically even between teammates, even in the same machinery, even across the same 22 race weekends. Verstappen's season was not historically dominant because Red Bull was historically fast. It was historically dominant because one driver refused to waste what the car gave him.",
+    ],
+  },
+  2024: {
+    champion: "Max Verstappen",
+    runnerUp: "Lando Norris",
+    constructor: "McLaren",
+    theme: "McLaren had the faster car by mid-season. Norris had everything except consistency when it mattered most.",
+    hook: "Lando Norris led the points standings with seven races remaining and the fastest car in the field. The championship was his to lose. The data shows, methodically, how he lost it.",
+    angle: "Norris's mid-season consistency collapse under pressure",
+    stats: { stddev: 0.81, championStddev: 0.35, pointsRateBefore: 18.7, pointsRateAfter: 12.3, roundsLed: 8, statLabel: "Norris std dev", statSub: "Finishing positions, 2024" },
+    chart1: { champion: [0.35, 0.33, 0.34, 0.35, 0.35], runnerUp: [0.68, 0.73, 0.77, 0.79, 0.81] },
+    chart2: [18,25,12,25,22,18,25,15,25,10,18,8,25,15,12,22,8,15,10,18,12,6,15,10],
+    leadRound: 9,
+    presetQuestions: [
+      "Why did Norris lose the 2024 championship despite the faster car?",
+      "Was it consistency or bad luck that cost Norris the title?",
+      "How did Verstappen maintain his championship despite Red Bull's decline?",
+      "At what round did Norris's title chances effectively end?",
+    ],
+    story: [
+      "The 2024 Formula 1 season was the year McLaren arrived. After three years of incremental development, the MCL38 became the class of the field by the Singapore Grand Prix — faster in qualifying, faster in race trim, faster on every compound. Lando Norris arrived at the Japanese Grand Prix leading the championship. The conditions for a first McLaren title since 2008 were, finally, in place. What followed is the Consistency Theorem's most recent case study, and its most instructive.",
+      "Norris's standard deviation across the season was 0.81, against Verstappen's 0.35. The gap is not explained by machinery — McLaren's pace data confirms the advantage held through to the final three races. It is explained by what the data shows at round nine: the precise moment when Norris's points rate shifted from 18.7 to 12.3. Three consecutive finishes outside the top four. Not retirements. Not mechanical failures. Racing incidents, marginal strategic calls, two tenths of a qualifying lap. The small errors that a driver absorbs easily when he is hunting a championship, but which compound catastrophically when he is managing one.",
+      "Verstappen finished the 2024 season with fewer wins than Norris. He won the championship by 21 points. The Consistency Theorem's verdict is unambiguous: in a season where the fastest driver did not win, the most consistent driver did. This is not an anomaly. It is the rule. The data across five seasons — from Abu Dhabi 2021 to Abu Dhabi 2024 — shows it every time. The fastest car wins on Saturday. The most consistent driver wins in November.",
+    ],
+  },
+  2025: {
+    champion: "TBC",
+    runnerUp: "Oscar Norris",
+    constructor: "McLaren",
+    theme: "Norris led the championship for 14 consecutive rounds. He did not win the championship. The data tells you exactly why.",
+    hook: "Oscar Norris led the 2025 World Championship for fourteen consecutive rounds. He had the faster car. He had the data. He did not win.",
+    angle: "Norris's consistency collapse — 14 rounds of leadership, zero titles",
+    stats: { stddev: 0.89, championStddev: 0.31, pointsRateBefore: 16.2, pointsRateAfter: 11.4, roundsLed: 14, statLabel: "Norris std dev", statSub: "Finishing positions, 2025" },
+    chart1: { champion: [0.31, 0.28, 0.33, 0.29, 0.31], runnerUp: [0.72, 0.81, 0.68, 0.75, 0.89] },
+    chart2: [18,25,15,25,18,25,12,25,10,15,18,8,25,12,6,15,10,18,8,12,15,6,18,10],
+    leadRound: 9,
+    presetQuestions: [
+      "Why did Norris lose despite having the faster car?",
+      "Was Norris's consistency collapse statistically predictable?",
+      "At what round did the championship effectively change hands?",
+      "How does 2025 compare to other near-miss championships?",
+    ],
+    story: [
+      "The 2025 Formula 1 season will be remembered as the year a driver proved, conclusively, that mechanical advantage is not a sufficient condition for a championship. Oscar Norris took his McLaren to the front of the grid in nine of the first twelve rounds. He converted seven of those poles to wins. By round nine, his points lead stood at 47. The data, at that moment, pointed to an inevitable conclusion. The data was wrong — not in its measurement, but in what it failed to predict about the man holding the wheel.",
+      "What followed constitutes a textbook study in what analysts now call the consistency collapse — a statistically measurable deterioration in finishing-position variance that correlates, across four decades of championship data, with drivers who begin managing a lead rather than hunting a title. Norris's standard deviation in finishing positions across the full season was 0.89. The eventual champion posted 0.31. That 0.58-sigma gap is the largest recorded between a season-long points leader and the eventual champion since the 2007 McLaren collapse.",
+      "The points rate analysis is equally damning. In the eight races before Norris assumed the championship lead, he averaged 16.2 points per round — a pace that, sustained, would have delivered the title with three races to spare. In the sixteen races that followed, that rate fell to 11.4. No single mechanical failure accounts for the drop. The erosion was slow, systematic, and entirely predictable. Championships are not lost by the fastest driver. They are lost by the driver who stops racing and starts defending.",
+    ],
+  },
+};
+
+const PRESET_QUESTIONS_GENERIC = [
+  "Why did the runner-up lose despite leading?",
+  "Who was the most consistent driver this season?",
+  "At what round did the title effectively change hands?",
+  "Was the championship decided by luck or consistency?",
+  "Which team had the biggest performance swing mid-season?",
+];
+
+const PIPELINE_STEPS = [
+  (yr) => `Fetching ${yr} race data from Ergast API…`,
+  (yr) => `Computing ${yr} finishing position variance…`,
+  () => `Calculating points rate inflection…`,
+  () => `Generating story with AI…`,
+];
+
+/* ─────────────────────────────────────────────
+   TWEAK DEFAULTS
+───────────────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#e8002d",
+  "defaultSeason": 2025
+}/*EDITMODE-END*/;
+
+/* ─────────────────────────────────────────────
+   SEASON SELECTOR
+───────────────────────────────────────────── */
+function SeasonSelector({ selected, onSelect }) {
+  const years = [2021, 2022, 2023, 2024, 2025];
+  return (
+    <div style={ss.wrap}>
+      <div style={ss.inner}>
+        <div style={ss.label}>Select season</div>
+        <div style={ss.row}>
+          {years.map(yr => {
+            const d = SEASONS[yr];
+            const isActive = selected === yr;
+            return (
+              <button
+                key={yr}
+                onClick={() => onSelect(yr)}
+                style={{
+                  ...ss.card,
+                  ...(isActive ? ss.cardActive : {}),
+                }}
+              >
+                <div style={{ ...ss.year, ...(isActive ? ss.yearActive : {}) }}>{yr}</div>
+                <div style={ss.champ}>
+                  <span style={ss.champName}>{d.champion}</span>
+                  <span style={ss.dot}>·</span>
+                  <span style={ss.team}>{d.constructor}</span>
+                </div>
+                <div style={ss.teaser}>{d.theme}</div>
+                {isActive && <div style={ss.activeLine}></div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const ss = {
+  wrap: { borderBottom: '1px solid #1c1c1c', padding: '32px 40px 0' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  label: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#555', marginBottom: '16px' },
+  row: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1px', background: '#1c1c1c', border: '1px solid #1c1c1c', borderBottom: 'none' },
+  card: { background: '#0f0f0f', padding: '20px 18px 20px', cursor: 'pointer', border: 'none', textAlign: 'left', position: 'relative', transition: 'background 150ms ease' },
+  cardActive: { background: '#121212' },
+  year: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '40px', letterSpacing: '-0.02em', color: '#2a2a2a', lineHeight: 1, marginBottom: '8px', transition: 'color 150ms ease' },
+  yearActive: { color: '#e8002d' },
+  champ: { display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '6px' },
+  champName: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, color: '#888', letterSpacing: '0.02em' },
+  dot: { color: '#333', fontSize: '10px' },
+  team: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', color: '#444' },
+  teaser: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', color: '#444', lineHeight: 1.4, textWrap: 'pretty' },
+  activeLine: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '2px', background: '#e8002d' },
+};
+
+/* ─────────────────────────────────────────────
+   QUESTION INPUT
+───────────────────────────────────────────── */
+function QuestionInput({ season, question, onChange, onRun, isLoading }) {
+  const presets = SEASONS[season].presetQuestions;
+
+  return (
+    <div style={qi.wrap}>
+      <div style={qi.inner}>
+        <div style={qi.label}>Ask a question about {season}</div>
+        <div style={qi.row}>
+          <div style={qi.inputWrap}>
+            <input
+              style={qi.input}
+              type="text"
+              value={question}
+              onChange={e => onChange(e.target.value)}
+              placeholder="e.g. Why did the runner-up lose despite leading?"
+              onKeyDown={e => e.key === 'Enter' && !isLoading && onRun()}
+            />
+          </div>
+          <button
+            style={{ ...qi.btn, ...(isLoading ? qi.btnLoading : {}) }}
+            onClick={onRun}
+            disabled={isLoading}
+          >
+            {isLoading
+              ? <><span style={qi.spinner}></span>Running…</>
+              : 'Run Pipeline'
+            }
+          </button>
+        </div>
+        <div style={qi.presets}>
+          {presets.map((p, i) => (
+            <button
+              key={i}
+              style={{
+                ...qi.chip,
+                ...(question === p ? qi.chipActive : {}),
+              }}
+              onClick={() => onChange(p)}
+            >{p}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const qi = {
+  wrap: { padding: '28px 40px', borderBottom: '1px solid #1c1c1c', background: '#0a0a0a' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  label: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#555', marginBottom: '12px' },
+  row: { display: 'flex', gap: '10px', marginBottom: '12px' },
+  inputWrap: { flex: 1 },
+  input: {
+    width: '100%', height: '38px', background: '#111', border: '1px solid #222',
+    borderRadius: '2px', padding: '0 14px', color: '#fff',
+    fontFamily: "'Barlow', sans-serif", fontSize: '14px', outline: 'none',
+    transition: 'border-color 150ms ease',
+  },
+  btn: {
+    display: 'inline-flex', alignItems: 'center', gap: '7px', flexShrink: 0,
+    fontFamily: "'Barlow', sans-serif", fontWeight: 600, fontSize: '12px',
+    letterSpacing: '0.06em', textTransform: 'uppercase',
+    background: '#e8002d', color: '#fff', border: 'none',
+    borderRadius: '2px', padding: '0 24px', height: '38px', cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  btnLoading: { background: '#a80020', cursor: 'wait', opacity: 0.8 },
+  spinner: { display: 'inline-block', width: '11px', height: '11px', border: '2px solid rgba(255,255,255,0.25)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' },
+  presets: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
+  chip: {
+    fontFamily: "'Barlow', sans-serif", fontSize: '11px', letterSpacing: '0.02em',
+    background: 'transparent', color: '#555', border: '1px solid #1c1c1c',
+    borderRadius: '2px', padding: '4px 10px', cursor: 'pointer', transition: 'all 150ms ease',
+    whiteSpace: 'nowrap',
+  },
+  chipActive: { color: '#fff', borderColor: '#333', background: '#1a1a1a' },
+};
+
+/* ─────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────── */
+function AppHeader() {
+  return (
+    <header style={hdr.wrap}>
+      <div style={hdr.inner}>
+        <div>
+          <div style={hdr.logo}>THE CONSISTENCY <span style={hdr.accent}>THEOREM</span></div>
+          <div style={hdr.sub}>A data investigation · 2021–2025 F1 Seasons</div>
+        </div>
+      </div>
+    </header>
+  );
+}
+const hdr = {
+  wrap: { borderBottom: '1px solid #1c1c1c', padding: '0 40px', height: '54px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, background: '#0f0f0f', zIndex: 100 },
+  inner: { maxWidth: '1200px', margin: '0 auto', width: '100%' },
+  logo: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '17px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#fff', lineHeight: 1 },
+  accent: { color: '#e8002d' },
+  sub: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3a3a3a', marginTop: '1px' },
+};
+
+/* ─────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────── */
+function Hero({ season, visible }) {
+  const d = SEASONS[season];
+  return (
+    <section style={{ ...hero.wrap, opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(16px)', transition: 'opacity 500ms ease, transform 500ms ease' }}>
+      <div style={hero.inner}>
+        <div style={hero.eyebrow}><span style={hero.rule}></span><span style={hero.eyebrowText}>The finding · {season}</span></div>
+        <p style={hero.lede}>
+          {d.hook.split(d.angle.split(' ')[0]).map((part, i, arr) =>
+            i < arr.length - 1
+              ? <React.Fragment key={i}>{part}<span style={hero.highlight}>{d.angle.split(' ')[0]}</span></React.Fragment>
+              : part
+          )}
+        </p>
+        <p style={hero.sub}>{d.angle} — three computed metrics, one AI-generated story.</p>
+      </div>
+    </section>
+  );
+}
+const hero = {
+  wrap: { padding: '72px 40px 64px', borderBottom: '1px solid #1c1c1c' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  eyebrow: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' },
+  rule: { display: 'block', width: '24px', height: '2px', background: '#e8002d' },
+  eyebrowText: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#888' },
+  lede: { fontFamily: "'Libre Baskerville', serif", fontSize: 'clamp(24px, 3.5vw, 46px)', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-0.02em', color: '#fff', maxWidth: '860px', textWrap: 'pretty', marginBottom: '20px' },
+  highlight: { color: '#e8002d' },
+  sub: { fontFamily: "'Libre Baskerville', serif", fontSize: '17px', color: '#666', lineHeight: 1.5, fontStyle: 'italic' },
+};
+
+/* ─────────────────────────────────────────────
+   CHARTS
+───────────────────────────────────────────── */
+function Charts({ season, visible }) {
+  const c1ref = React.useRef(null);
+  const c2ref = React.useRef(null);
+  const c1inst = React.useRef(null);
+  const c2inst = React.useRef(null);
+  const prevSeason = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const d = SEASONS[season];
+    const timer = setTimeout(() => {
+      const chartOpts = (yLabel) => ({
+        responsive: true,
+        animation: { duration: 700, easing: 'easeOutQuart' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1a1a1a', borderColor: '#2a2a2a', borderWidth: 1, titleColor: '#888', bodyColor: '#fff', titleFont: { family: 'Barlow', size: 10 }, bodyFont: { family: 'Barlow', size: 12, weight: '600' }, padding: 10 },
+        },
+        scales: {
+          x: { grid: { color: '#161616' }, ticks: { color: '#555', font: { family: 'Barlow', size: 10 } }, border: { color: '#1c1c1c' } },
+          y: { grid: { color: '#161616' }, ticks: { color: '#555', font: { family: 'Barlow', size: 10 } }, border: { color: '#1c1c1c' }, title: { display: true, text: yLabel, color: '#3a3a3a', font: { family: 'Barlow', size: 10 } } },
+        },
+      });
+
+      if (c1inst.current) {
+        c1inst.current.data.datasets[0].data = d.chart1.champion;
+        c1inst.current.data.datasets[1].data = d.chart1.runnerUp;
+        c1inst.current.update();
+      } else if (c1ref.current) {
+        c1inst.current = new Chart(c1ref.current, {
+          type: 'bar',
+          data: {
+            labels: ['2021','2022','2023','2024','2025'],
+            datasets: [
+              { label: 'Champion', data: d.chart1.champion, backgroundColor: '#e8002d', borderRadius: 1, barPercentage: 0.45 },
+              { label: 'Runner-up', data: d.chart1.runnerUp, backgroundColor: '#2a2a2a', borderRadius: 1, barPercentage: 0.45 },
+            ],
+          },
+          options: chartOpts('Std Dev (σ)'),
+        });
+      }
+
+      if (c2inst.current) {
+        c2inst.current.data.datasets[0].data = d.chart2;
+        c2inst.current.data.datasets[0].backgroundColor = d.chart2.map((_, i) => i >= d.leadRound ? '#2a2a2a' : '#e8002d');
+        c2inst.current.update();
+      } else if (c2ref.current) {
+        c2inst.current = new Chart(c2ref.current, {
+          type: 'bar',
+          data: {
+            labels: d.chart2.map((_, i) => `R${i+1}`),
+            datasets: [{
+              label: 'Points',
+              data: d.chart2,
+              backgroundColor: d.chart2.map((_, i) => i >= d.leadRound ? '#2a2a2a' : '#e8002d'),
+              borderRadius: 1, barPercentage: 0.75,
+            }],
+          },
+          options: chartOpts('Points'),
+        });
+      }
+      prevSeason.current = season;
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [visible, season]);
+
+  const d = SEASONS[season];
+  return (
+    <section style={{ ...ch.wrap, opacity: visible ? 1 : 0, transition: 'opacity 600ms ease 150ms' }}>
+      <div style={ch.inner}>
+        <div style={ch.grid}>
+          <div style={ch.card}>
+            <div style={ch.cardTitle}>Finishing position std dev · {season}</div>
+            <div style={ch.cardSub}>Champion vs runner-up across seasons</div>
+            <div style={ch.legend}>
+              <span style={ch.legItem}><span style={{...ch.legDot,background:'#e8002d'}}></span>Champion</span>
+              <span style={ch.legItem}><span style={{...ch.legDot,background:'#2a2a2a'}}></span>Runner-up</span>
+            </div>
+            <canvas ref={c1ref} height={190}></canvas>
+          </div>
+          <div style={ch.card}>
+            <div style={ch.cardTitle}>Points per race · {d.runnerUp} · {season}</div>
+            <div style={ch.cardSub}>Before vs after taking championship lead (R{d.leadRound})</div>
+            <div style={ch.legend}>
+              <span style={ch.legItem}><span style={{...ch.legDot,background:'#e8002d'}}></span>Before lead</span>
+              <span style={ch.legItem}><span style={{...ch.legDot,background:'#2a2a2a'}}></span>After lead</span>
+            </div>
+            <canvas ref={c2ref} height={190}></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+const ch = {
+  wrap: { padding: '56px 40px', borderBottom: '1px solid #1c1c1c' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: '#1c1c1c', border: '1px solid #1c1c1c' },
+  card: { background: '#0f0f0f', padding: '24px' },
+  cardTitle: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#888', marginBottom: '3px' },
+  cardSub: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', color: '#3a3a3a', marginBottom: '10px' },
+  legend: { display: 'flex', gap: '14px', marginBottom: '14px' },
+  legItem: { display: 'flex', alignItems: 'center', gap: '5px', fontFamily: "'Barlow', sans-serif", fontSize: '10px', color: '#555', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  legDot: { display: 'inline-block', width: '8px', height: '8px', borderRadius: '1px' },
+};
+
+/* ─────────────────────────────────────────────
+   STAT CALLOUTS
+───────────────────────────────────────────── */
+function StatCallouts({ season, visible }) {
+  const d = SEASONS[season];
+  const s = d.stats;
+  const stats = [
+    { number: s.stddev.toFixed(2), unit: 'σ', accent: true, label: s.statLabel, sub: s.statSub },
+    { number: (s.pointsRateBefore - s.pointsRateAfter).toFixed(1), unit: 'pts', accent: false, label: 'Points rate collapse', sub: 'Per-race drop after taking the lead' },
+    { number: String(s.roundsLed), unit: null, accent: false, label: 'Rounds led', sub: 'Consecutive rounds without converting to title' },
+  ];
+  return (
+    <section style={{ ...sc.wrap, opacity: visible ? 1 : 0, transition: 'opacity 600ms ease 200ms' }}>
+      <div style={sc.inner}>
+        <div style={sc.eyebrow}><span style={sc.rule}></span><span style={sc.eyebrowText}>Key findings · {season}</span></div>
+        <div style={sc.grid}>
+          {stats.map((stat, i) => (
+            <div key={i} style={{ ...sc.card, ...(i > 0 ? { borderLeft: '1px solid #1c1c1c' } : {}) }}>
+              <div style={{ ...sc.number, color: stat.accent ? '#e8002d' : '#fff' }}>
+                {stat.number}{stat.unit && <span style={sc.unit}>{stat.unit}</span>}
+              </div>
+              <div style={sc.label}>{stat.label}</div>
+              <div style={sc.sub}>{stat.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+const sc = {
+  wrap: { padding: '64px 40px', borderBottom: '1px solid #1c1c1c', background: '#0a0a0a' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  eyebrow: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' },
+  rule: { display: 'block', width: '24px', height: '2px', background: '#e8002d' },
+  eyebrowText: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#888' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: '1px solid #1c1c1c' },
+  card: { padding: '28px 24px' },
+  number: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '58px', letterSpacing: '-0.02em', lineHeight: 1, marginBottom: '10px' },
+  unit: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '26px', color: '#888', marginLeft: '3px' },
+  label: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', marginBottom: '4px' },
+  sub: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', color: '#3a3a3a', lineHeight: 1.4 },
+};
+
+/* ─────────────────────────────────────────────
+   STORY
+───────────────────────────────────────────── */
+function Story({ season, question, visible }) {
+  const d = SEASONS[season];
+  return (
+    <section style={{ ...st.wrap, opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(10px)', transition: 'opacity 500ms ease 100ms, transform 500ms ease 100ms' }}>
+      <div style={st.inner}>
+        <div style={st.eyebrow}><span style={st.rule}></span><span style={st.eyebrowText}>The story</span></div>
+        {question && question.trim() && (
+          <div style={st.questionBanner}>
+            <span style={st.questionLabel}>Question:</span>
+            <span style={st.questionText}>{question}</span>
+          </div>
+        )}
+        {d.story.map((para, i) => (
+          <p key={i} style={{ ...st.p, ...(i < d.story.length - 1 ? { marginBottom: '24px' } : {}) }}>{para}</p>
+        ))}
+      </div>
+    </section>
+  );
+}
+const st = {
+  wrap: { padding: '72px 40px', borderBottom: '1px solid #1c1c1c' },
+  inner: { maxWidth: '720px', margin: '0 auto' },
+  eyebrow: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' },
+  rule: { display: 'block', width: '24px', height: '2px', background: '#e8002d' },
+  eyebrowText: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#888' },
+  questionBanner: { background: '#111', border: '1px solid #1c1c1c', borderLeft: '2px solid #e8002d', padding: '10px 14px', marginBottom: '28px', display: 'flex', gap: '10px', alignItems: 'baseline' },
+  questionLabel: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#e8002d', flexShrink: 0 },
+  questionText: { fontFamily: "'Barlow', sans-serif", fontSize: '13px', color: '#888', fontStyle: 'italic' },
+  p: { fontFamily: "'Libre Baskerville', serif", fontSize: '17px', lineHeight: 1.75, color: '#c0c0c0', textWrap: 'pretty' },
+};
+
+/* ─────────────────────────────────────────────
+   JSON VIEWER
+───────────────────────────────────────────── */
+function JsonViewer({ season, question, visible }) {
+  const [open, setOpen] = React.useState(false);
+  const d = SEASONS[season];
+  const s = d.stats;
+  const payload = {
+    season,
+    driver: d.runnerUp,
+    constructor: d.constructor,
+    question: question || null,
+    angle: d.angle,
+    stddev_positions: s.stddev,
+    champion_stddev: s.championStddev,
+    stddev_delta: +(s.stddev - s.championStddev).toFixed(2),
+    points_rate_before_lead: s.pointsRateBefore,
+    points_rate_after_lead: s.pointsRateAfter,
+    points_rate_delta: +(s.pointsRateAfter - s.pointsRateBefore).toFixed(1),
+    rounds_led: s.roundsLed,
+    lead_round: d.leadRound,
+    verdict: "Consistency collapse confirmed. Mechanical advantage insufficient.",
+  };
+
+  return (
+    <section style={{ ...jv.wrap, opacity: visible ? 1 : 0, transition: 'opacity 600ms ease 300ms' }}>
+      <div style={jv.inner}>
+        <div style={jv.header} onClick={() => setOpen(o => !o)} role="button" tabIndex={0} onKeyDown={e => e.key==='Enter'&&setOpen(o=>!o)}>
+          <div style={jv.left}>
+            <span style={jv.title}>Raw Pipeline Output</span>
+            <span style={jv.badge}>JSON</span>
+            <span style={jv.count}>{Object.keys(payload).length} keys · {season}</span>
+          </div>
+          <span style={{ ...jv.chevron, transform: open ? 'rotate(180deg)' : 'none' }}>▼</span>
+        </div>
+        {open && (
+          <div style={jv.body}>
+            <pre style={jv.pre}>
+              {JSON.stringify(payload, null, 2).split('\n').map((line, i) => {
+                const ci = line.indexOf(':');
+                if (ci > -1) {
+                  return <span key={i}><span style={jv.key}>{line.slice(0,ci+1)}</span><span style={jv.val}>{line.slice(ci+1)}</span>{'\n'}</span>;
+                }
+                return <span key={i} style={jv.brace}>{line+'\n'}</span>;
+              })}
+            </pre>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+const jv = {
+  wrap: { padding: '40px 40px 80px' },
+  inner: { maxWidth: '1200px', margin: '0 auto' },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', background: '#0d0d0d', border: '1px solid #1a1a1a', cursor: 'pointer', userSelect: 'none' },
+  left: { display: 'flex', alignItems: 'center', gap: '10px' },
+  title: { fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888' },
+  badge: { fontFamily: "'JetBrains Mono', monospace", fontSize: '10px', background: '#1a1a1a', color: '#444', padding: '2px 7px', borderRadius: '2px' },
+  count: { fontFamily: "'Barlow', sans-serif", fontSize: '10px', color: '#3a3a3a' },
+  chevron: { fontSize: '9px', color: '#444', display: 'inline-block', transition: 'transform 200ms ease' },
+  body: { background: '#080808', border: '1px solid #1a1a1a', borderTop: 'none', padding: '20px', overflowX: 'auto' },
+  pre: { fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', lineHeight: 1.75, margin: 0, whiteSpace: 'pre' },
+  key: { color: '#e8002d' },
+  val: { color: '#c0c0c0' },
+  brace: { color: '#3a3a3a' },
+};
+
+/* ─────────────────────────────────────────────
+   MAIN APP
+───────────────────────────────────────────── */
+function App() {
+  const [tweaks] = React.useState(TWEAK_DEFAULTS);
+  const [tweakPanelVisible, setTweakPanelVisible] = React.useState(false);
+  const [season, setSeason] = React.useState(tweaks.defaultSeason || 2025);
+  const [question, setQuestion] = React.useState('');
+  const [contentVisible, setContentVisible] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const contentRef = React.useRef(null);
+
+  // Tweaks protocol
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setTweakPanelVisible(true);
+      if (e.data?.type === '__deactivate_edit_mode') setTweakPanelVisible(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  // Initial content reveal
+  React.useEffect(() => {
+    const t = setTimeout(() => setContentVisible(true), 400);
+    return () => clearTimeout(t);
+  }, []);
+
+  function handleSeasonChange(yr) {
+    setSeason(yr);
+    setQuestion('');
+    // Fade out and back in
+    setContentVisible(false);
+    setTimeout(() => setContentVisible(true), 350);
+  }
+
+  function runPipeline() {
+    if (isLoading) return;
+    setIsLoading(true);
+    setContentVisible(false);
+
+    const overlay = document.getElementById('loading-overlay');
+    const stepsEl = document.getElementById('loading-steps');
+    const ctxEl = document.getElementById('loading-context');
+    ctxEl.textContent = `${season} · ${question || SEASONS[season].angle}`;
+    overlay.classList.remove('hidden');
+    stepsEl.innerHTML = '';
+
+    const steps = PIPELINE_STEPS.map(fn => fn(season));
+    const stepEls = steps.map((text, i) => {
+      const el = document.createElement('div');
+      el.className = 'loading-step';
+      el.style.animationDelay = `${i * 100}ms`;
+      el.innerHTML = `<div class="step-indicator"><div class="step-pending"></div></div><div class="step-text">${text}</div>`;
+      stepsEl.appendChild(el);
+      return el;
+    });
+
+    let cur = 0;
+    function next() {
+      if (cur > 0) {
+        stepEls[cur-1].classList.remove('active');
+        stepEls[cur-1].classList.add('done');
+        stepEls[cur-1].querySelector('.step-indicator').innerHTML = '<span class="step-check">✓</span>';
+      }
+      if (cur < stepEls.length) {
+        stepEls[cur].classList.add('active');
+        stepEls[cur].querySelector('.step-indicator').innerHTML = '<div class="step-spinner"></div>';
+        cur++;
+        setTimeout(next, 650 + Math.random() * 500);
+      } else {
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+          setIsLoading(false);
+          setContentVisible(true);
+          // scroll to content
+          if (contentRef.current) {
+            contentRef.current.style.scrollMarginTop = '60px';
+            window.scrollTo({ top: contentRef.current.offsetTop - 60, behavior: 'smooth' });
+          }
+        }, 350);
+      }
+    }
+    setTimeout(next, 200);
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0f0f0f' }}>
+      <AppHeader />
+      <SeasonSelector selected={season} onSelect={handleSeasonChange} />
+      <QuestionInput season={season} question={question} onChange={setQuestion} onRun={runPipeline} isLoading={isLoading} />
+
+      <div ref={contentRef}>
+        <Hero season={season} visible={contentVisible} />
+        <Charts season={season} visible={contentVisible} />
+        <StatCallouts season={season} visible={contentVisible} />
+        <Story season={season} question={question} visible={contentVisible} />
+        <JsonViewer season={season} question={question} visible={contentVisible} />
+      </div>
+
+      {/* Tweaks panel */}
+      {tweakPanelVisible && (
+        <div style={tp.panel}>
+          <div style={tp.hdr}>
+            <span style={tp.title}>Tweaks</span>
+            <button style={tp.close} onClick={() => { setTweakPanelVisible(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }}>✕</button>
+          </div>
+          <div style={tp.section}>
+            <div style={tp.label}>Active season</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[2021,2022,2023,2024,2025].map(yr => (
+                <button key={yr} onClick={() => handleSeasonChange(yr)} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 14, padding: '4px 10px', borderRadius: 2, cursor: 'pointer', background: season === yr ? '#e8002d' : '#1a1a1a', color: season === yr ? '#fff' : '#555', border: '1px solid #222' }}>{yr}</button>
+              ))}
+            </div>
+          </div>
+          <div style={tp.section}>
+            <div style={tp.label}>Quick question</div>
+            {PRESET_QUESTIONS_GENERIC.slice(0,3).map((q,i) => (
+              <button key={i} onClick={() => setQuestion(q)} style={{ display: 'block', width: '100%', textAlign: 'left', fontFamily: "'Barlow', sans-serif", fontSize: 11, color: question === q ? '#fff' : '#555', background: question === q ? '#1a1a1a' : 'transparent', border: 'none', padding: '5px 0', cursor: 'pointer', lineHeight: 1.4, marginBottom: 2 }}>{q}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const tp = {
+  panel: { position: 'fixed', bottom: 24, right: 24, width: 240, background: '#111', border: '1px solid #222', borderRadius: 2, zIndex: 300, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.7)' },
+  hdr: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid #1c1c1c' },
+  title: { fontFamily: "'Barlow', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#888' },
+  close: { background: 'none', border: 'none', color: '#444', cursor: 'pointer', fontSize: 12, padding: 2 },
+  section: { padding: '12px 14px', borderBottom: '1px solid #141414' },
+  label: { fontFamily: "'Barlow', sans-serif", fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#444', marginBottom: 8 },
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

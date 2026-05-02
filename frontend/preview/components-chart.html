@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 20px; }
+.chart-wrap {
+  background: #0f0f0f;
+  padding: 0;
+}
+.chart-header { margin-bottom: 12px; }
+.chart-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #888;
+}
+.chart-sub { font-size: 10px; color: #444; margin-top: 2px; letter-spacing: 0.04em; }
+.legend { display: flex; gap: 16px; margin-top: 8px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #888; letter-spacing: 0.04em; text-transform: uppercase; }
+.legend-dot { width: 8px; height: 8px; border-radius: 1px; }
+canvas { display: block; }
+</style>
+</head>
+<body>
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <div class="chart-title">Finishing Position Std Dev — By Season</div>
+      <div class="chart-sub">Champion vs Runner-up · 2021–2025</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#e8002d"></div>Champion</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#444"></div>Runner-up</div>
+      </div>
+    </div>
+    <canvas id="chart" width="580" height="200"></canvas>
+  </div>
+  <script>
+    new Chart(document.getElementById('chart'), {
+      type: 'bar',
+      data: {
+        labels: ['2021','2022','2023','2024','2025'],
+        datasets: [
+          { label: 'Champion', data: [0.31, 0.28, 0.33, 0.29, 0.31], backgroundColor: '#e8002d', borderRadius: 1, barPercentage: 0.4 },
+          { label: 'Runner-up', data: [0.72, 0.81, 0.68, 0.75, 0.89], backgroundColor: '#444', borderRadius: 1, barPercentage: 0.4 }
+        ]
+      },
+      options: {
+        responsive: false,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: '#1a1a1a', borderColor: '#333', borderWidth: 1,
+          titleColor: '#888', bodyColor: '#fff',
+          titleFont: { family: 'Barlow', size: 10 },
+          bodyFont: { family: 'Barlow', size: 12 }
+        }},
+        scales: {
+          x: { grid: { color: '#1a1a1a' }, ticks: { color: '#888', font: { family: 'Barlow', size: 10 } }, border: { color: '#222' } },
+          y: { grid: { color: '#1a1a1a' }, ticks: { color: '#888', font: { family: 'Barlow', size: 10 } }, border: { color: '#222' }, min: 0, max: 1.2 }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

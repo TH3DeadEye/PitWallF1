@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 24px; }
+.loading-block { display: flex; flex-direction: column; gap: 10px; }
+.step { display: flex; align-items: center; gap: 10px; opacity: 0.35; }
+.step.active { opacity: 1; }
+.step.done { opacity: 0.6; }
+.indicator { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(232,0,45,0.2); border-top-color: #e8002d; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.check { color: #444; font-size: 13px; }
+.step-text { font-size: 13px; letter-spacing: 0.02em; color: #888; }
+.step.active .step-text { color: #fff; }
+.step.done .step-text { color: #555; text-decoration: line-through; text-decoration-color: #333; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.section-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+  <div class="section-label">Pipeline Loading State</div>
+  <div class="loading-block">
+    <div class="step done">
+      <div class="indicator"><span class="check">✓</span></div>
+      <div class="step-text">Fetching race data from Ergast API…</div>
+    </div>
+    <div class="step active">
+      <div class="indicator"><div class="spinner"></div></div>
+      <div class="step-text">Analysing consistency metrics…</div>
+    </div>
+    <div class="step">
+      <div class="indicator"><span style="width:14px;height:14px;display:block;border:1px solid #333;border-radius:50%"></span></div>
+      <div class="step-text">Generating story with AI…</div>
+    </div>
+  </div>
+</body>
+</html>

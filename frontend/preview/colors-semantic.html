@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f0f; font-family: 'Barlow', sans-serif; padding: 20px; }
+.row { display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; align-items: center; gap: 12px; }
+.dot { width: 32px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+.meta { flex: 1; }
+.token { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #e8002d; }
+.desc { font-size: 11px; color: #888; margin-top: 1px; }
+.val { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444; margin-top: 1px; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="item"><div class="dot" style="background:#0f0f0f;border:1px solid #222"></div><div class="meta"><div class="token">--color-page-bg</div><div class="desc">Page background</div><div class="val">#0f0f0f</div></div></div>
+  <div class="item"><div class="dot" style="background:#1a1a1a;border:1px solid #222"></div><div class="meta"><div class="token">--color-surface</div><div class="desc">Cards, panels</div><div class="val">#1a1a1a</div></div></div>
+  <div class="item"><div class="dot" style="background:#e8002d"></div><div class="meta"><div class="token">--color-cta</div><div class="desc">Primary action</div><div class="val">#e8002d</div></div></div>
+  <div class="item"><div class="dot" style="background:#e8002d; opacity:0.15; border:1px solid #e8002d"></div><div class="meta"><div class="token">--accent-glow</div><div class="desc">Accent wash / highlight bg</div><div class="val">rgba(232,0,45,0.15)</div></div></div>
+  <div class="item"><div class="dot" style="background:#ffffff"></div><div class="meta"><div class="token">--color-text</div><div class="desc">Primary text</div><div class="val">#ffffff</div></div></div>
+  <div class="item"><div class="dot" style="background:#c0c0c0"></div><div class="meta"><div class="token">--color-text-body</div><div class="desc">Article body copy</div><div class="val">#c0c0c0</div></div></div>
+  <div class="item"><div class="dot" style="background:#888"></div><div class="meta"><div class="token">--color-text-label</div><div class="desc">Labels, captions, metadata</div><div class="val">#888888</div></div></div>
+  <div class="item"><div class="dot" style="background:#e8002d"></div><div class="meta"><div class="token">--chart-champion</div><div class="desc">Champion data series</div><div class="val">#e8002d</div></div></div>
+  <div class="item"><div class="dot" style="background:#444"></div><div class="meta"><div class="token">--chart-runner</div><div class="desc">Runner-up data series</div><div class="val">#444444</div></div></div>
+</div>
+</body>
+</html>
