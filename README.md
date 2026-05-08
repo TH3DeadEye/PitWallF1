@@ -2,7 +2,7 @@
 
 **The Consistency Theorem** is an advanced Formula 1 analytics engine designed to decode the DNA of championship-winning performance. Developed for **HuskyHacks 2025**, this project moves beyond surface-level standings to analyze the psychological and technical "pressure traps" that define the hybrid era of F1.
 
-![Project Preview](https://via.placeholder.com/1200x600?text=The+Consistency+Theorem+Dashboard) *(Note: Replace with actual screenshot)*
+![Project Preview](/docs/pitwall-thumbnail.png)
 
 ## 📊 The Core Metrics
 
