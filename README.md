@@ -1,4 +1,4 @@
-# 🏎️ The Consistency Theorem
+# 🏎️ PitWall
 
 **The Consistency Theorem** is an advanced Formula 1 analytics engine designed to decode the DNA of championship-winning performance. Developed for **HuskyHacks 2025**, this project moves beyond surface-level standings to analyze the psychological and technical "pressure traps" that define the hybrid era of F1.
 
